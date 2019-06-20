@@ -22,11 +22,10 @@ for nom_fichier in os.listdir("cartes"):
 			contenu = fichier.read()
 			cartes.append(Carte(nom_carte, contenu))
 			
-# A VERIFIER : Si il y a une partie sauvegardée, on l'affiche
+# S'il y a une partie sauvegardée, on l'affiche
 partie = None
 try:
 	with open('partie_sauvegardee.txt', 'rb') as partie_sauvegardee:
-		#mon_depickler = pickle.Unpickler(partie_sauvegardee)
 		partie_trouvee = pickle.load(partie_sauvegardee)
 		reprendre_partie = None
 		while reprendre_partie == None:
@@ -43,16 +42,14 @@ try:
 
 except:
 	partie = None
-	
-# TOUT VERIFIER SOUS CETTE LIGNE
 
 # Choix du labyrinthe si pas de reprise de partie en cours
 while partie == None:
 	# On affiche les cartes existantes
-	print("Labyrinthes existants :")
+	print("Labyrinthes existants :\n")
 	for i, carte in enumerate(cartes):
 		print("  {} - {}".format(i + 1, carte.nom))
-	choix_labyrinthe = input("Entrez un numéro de labyrinthe pour commencer à jouer : ")
+	choix_labyrinthe = input("\nEntrez un numéro de labyrinthe pour commencer à jouer : ")
 	if choix_labyrinthe.isdigit() == False or choix_labyrinthe == "": # On vérifie que l'input est bien un chiffre
 		print("Merci d'entrer un chiffre")
 		continue
@@ -63,11 +60,9 @@ while partie == None:
 		choix_labyrinthe = int(choix_labyrinthe) - 1
 		print(cartes[choix_labyrinthe].display_labyrinthe())
 		partie = cartes[choix_labyrinthe].labyrinthe
-		with open('partie_sauvegardee.txt', 'wb') as fichier: # On sauvegarde la partie dans un fichier
-			mon_pickler = pickle.Pickler(fichier)
-			mon_pickler.dump(partie)
 		
 # Progression dans le jeu
+Lab = Labyrinthe(partie)
 partie_gagnee = False
 while partie_gagnee == False:
 	commande = input("> ")
@@ -75,39 +70,26 @@ while partie_gagnee == False:
 		print("Merci d'entrer une commande valide")
 		continue
 	elif commande[0].lower() == "q": # Si la commande est Q, sauvegarder la partie et quitter
-		with open('partie_sauvegardee.txt', 'wb') as fichier: # On sauvegarde la partie dans un fichier
-			mon_pickler = pickle.Pickler(fichier)
-			mon_pickler.dump(partie)
+		Lab.save_game()
 		print("Partie sauvegardée, merci d'avoir joué !")
 		break
 	else: # On récupère la direction et le nombre de déplacements à faire
-		direction = commande[0]
+		direction = commande[0].lower()
 		if len(commande) == 1:
 			nb_coups = 1
 		else:
 			nb_coups = int(commande[1:])
-
-		# Transformer la partie en tableau (à mettre dans le fichier labyrinthe ???)
-		partie_lignes = partie.splitlines()
-		partie_tableau = []
-		for value in partie_lignes:
-			ligne_caracteres = splitchars(value)
-			partie_tableau.append(ligne_caracteres)
 		
 		# Boucle qui lance la fonction de déplacement autant de fois que nécessaire
 		while nb_coups > 0:
-			deplacement(direction)
+			partie_gagnee = Lab.deplacement(direction)
+			if partie_gagnee == True:
+				break
 			nb_coups = nb_coups - 1
-		with open('partie_sauvegardee.txt', 'wb') as fichier: # On sauvegarde la partie dans un fichier
-			mon_pickler = pickle.Pickler(fichier)
-			mon_pickler.dump(partie)
-		print(partie) # On affiche la partie
 			
-"""
-Remarques :
-- Créer une fonction qui enregistre la partie au lieu de remettre tout le code à chaque fois ?
-- Organisation des fichiers : on met quoi dans la classe Carte ? Et dans la classe Labyrinthe ? Ajouter un fichier qui contient toutes les fonctions ?
-"""
-
-
+		if partie_gagnee == False:
+			Lab.display_tableau() # On affiche la partie
+			Lab.save_game()
 		
+		else:
+			Lab.delete_saved_game()

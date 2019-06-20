@@ -7,7 +7,7 @@ class Carte:
 
 	def __init__(self, nom, chaine):
 		self.nom = nom
-		self.labyrinthe = creer_labyrinthe_depuis_chaine(chaine)
+		self.labyrinthe = chaine
 		
 	def __repr__(self):
 		return "<Carte {}>".format(self.nom)
@@ -15,6 +15,3 @@ class Carte:
 	def display_labyrinthe(self):
 		return "{}".format(self.labyrinthe)
 		
-
-def creer_labyrinthe_depuis_chaine(chaine):
-	return chaine
